@@ -1,0 +1,94 @@
+x-airflow: &airflow
+  image: btc-airflow:dev
+  build:
+    context: .
+    dockerfile: airflow/Dockerfile
+  environment: &airflow-env
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@postgres/airflow
+    AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
+    AIRFLOW__CORE__PARALLELISM: "4"
+    AIRFLOW__WEBSERVER__WORKERS: "2"
+    AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW_WEB_SECRET:?Set AIRFLOW_WEB_SECRET in .env}
+    AIRFLOW_ADMIN_PASSWORD: ${AIRFLOW_ADMIN_PASSWORD:?Set AIRFLOW_ADMIN_PASSWORD in .env}
+    MODEL_ROOT: /app/models
+    MODEL_RELOAD_URL: http://api:5000/internal/reload
+    K8S_MODEL_RELOAD_URL: ${K8S_MODEL_RELOAD_URL:-}
+    RELOAD_TOKEN: ${RELOAD_TOKEN:?Set RELOAD_TOKEN in .env}
+  volumes:
+    - model-store:/app/models
+    - airflow-logs:/opt/airflow/logs
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_DB: airflow
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U airflow -d airflow"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  storage-init:
+    image: busybox:1.37
+    user: "0:0"
+    command: ["sh", "-ec", "chgrp 0 /app/models; chmod 2770 /app/models"]
+    volumes:
+      - model-store:/app/models
+  airflow-init:
+    <<: *airflow
+    depends_on:
+      postgres:
+        condition: service_healthy
+      storage-init:
+        condition: service_completed_successfully
+    command:
+      - bash
+      - -ec
+      - |
+        airflow db migrate
+        airflow users list --output json > /tmp/users.json
+        if ! python -c 'import json, sys; sys.exit(not any(u["username"] == "admin" for u in json.load(open("/tmp/users.json"))))'; then
+          airflow users create --username admin --password "$${AIRFLOW_ADMIN_PASSWORD}" --firstname BTC --lastname Admin --role Admin --email admin@example.invalid
+        fi
+  airflow-scheduler:
+    <<: *airflow
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+    command: scheduler
+  airflow-webserver:
+    <<: *airflow
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+    command: webserver
+    ports:
+      - "127.0.0.1:8080:8080"
+  api:
+    image: btc-api:dev
+    build:
+      context: .
+      dockerfile: app/Dockerfile
+    user: "10001:0"
+    depends_on:
+      storage-init:
+        condition: service_completed_successfully
+    environment:
+      MODEL_ROOT: /app/models
+      PORT: "5000"
+      RELOAD_TOKEN: ${RELOAD_TOKEN}
+    ports:
+      - "127.0.0.1:5000:5000"
+    volumes:
+      - model-store:/app/models:ro
+
+volumes:
+  model-store:
+  airflow-logs:
+  postgres-db:

@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MLOps Assignment 3 Report Template</title>
+<style>
+:root { color: #18292f; font-family: "Segoe UI", Arial, sans-serif; font-size: 13.5px; }
+* { box-sizing: border-box; }
+body { margin: 0; background: #e8efef; }
+.toolbar { background: #0b4248; color: white; padding: 12px 24px; text-align: center; }
+button { font: inherit; padding: 5px 12px; margin-left: 8px; }
+.page { width: 210mm; height: 297mm; margin: 16px auto; background: white; padding: 16mm 17mm 13mm;
+        position: relative; overflow: hidden; }
+.kicker { color: #12666a; font-weight: 700; letter-spacing: .08em; font-size: 11px; margin: 0 0 5px; }
+h1 { font-size: 32px; margin: 0 0 8px; line-height: 1.12; }
+h2 { font-size: 15.5px; margin: 15px 0 5px; }
+p { line-height: 1.48; margin: 4px 0 9px; }
+.ref { color: #456067; font-size: 12px; }
+footer { position: absolute; bottom: 10mm; left: 17mm; right: 17mm; border-top: 1px solid #b9cccc;
+         display: flex; justify-content: space-between; padding-top: 6px; color: #476169; font-size: 11px; }
+.edit { border: 1px dashed #9cb7ba; padding: 8px 10px; min-height: 34px; margin: 4px 0 9px; overflow-wrap: anywhere; }
+.evidence { min-height: 71px; }
+.evidence img { display: block; width: auto; max-width: 100%; max-height: 53mm; margin: 3px auto; object-fit: contain; }
+.evidence p { margin: 1px 0; }
+.hint { color: #48646b; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start; }
+.arch { width: 100%; height: auto; margin: 4px 0; }
+.arch .node { fill: #eaf4f3; stroke: #7caaad; stroke-width: 1.2; }
+.arch .flow { fill: none; stroke: #46787e; stroke-width: 1.4; marker-end: url(#arrow); }
+.arch text { fill: #18292f; font-size: 12px; text-anchor: middle; font-family: inherit; }
+.arch .detail { fill: #456067; font-size: 10px; }
+table { width: 100%; border-collapse: collapse; margin: 6px 0 9px; }
+th, td { padding: 6px 8px; border-bottom: 1px solid #d1e1e1; text-align: left; }
+th { background: #eaf4f3; font-weight: 700; }
+@page { size: A4; margin: 0; }
+@media print {
+  body { background: white; }
+  .toolbar { display: none; }
+  .page { margin: 0; break-after: page; }
+  .page:last-of-type { break-after: auto; }
+  .edit { border-color: #d1e1e1; }
+  * { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+}
+</style>
+</head>
+<body>
+<div class="toolbar">
+  Edit the outlined boxes and paste cropped screenshots into the evidence areas.
+  <button type="button" onclick="window.print()">Print to PDF</button>
+</div>
+<main>
+<section class="page">
+<p class="kicker">MLOPS ASSIGNMENT 3</p>
+<h1>Seven Day Bitcoin Forecasting</h1>
+<p class="ref">Technical report template · Group of two · Replace the bracketed prompts with results from your own runs.</p>
+<div class="edit" contenteditable="true">[Student names and roll numbers]<br>[GitHub repository URL]<br>[Docker Hub URLs for btc-api and btc-trainer]<br>[Commit SHA and date of demonstration]</div>
+
+<h2>System architecture</h2>
+<svg class="arch" viewBox="0 0 666 203" role="img" aria-label="Airflow and Kubeflow fetch history, train and register the model. GitHub builds and publishes images. Kubernetes serves the active model behind NGINX.">
+  <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#46787e"/></marker></defs>
+  <path class="flow" d="M106 73H139"/>
+  <path class="flow" d="M56 97V155H139"/>
+  <path class="flow" d="M302 73H335"/>
+  <path class="flow" d="M468 73H499"/>
+  <path class="flow" d="M302 155H336"/>
+  <path class="flow" d="M568 44V50"/>
+  <path class="flow" d="M568 132V96"/>
+  <rect class="node" x="6" y="49" width="100" height="48" rx="5"/>
+  <text x="56" y="69">Yahoo Finance</text><text class="detail" x="56" y="86">Daily BTC-USD</text>
+  <rect class="node" x="141" y="49" width="161" height="48" rx="5"/>
+  <text x="221" y="69">Airflow</text><text class="detail" x="221" y="86">ETL and validation gate</text>
+  <rect class="node" x="338" y="49" width="130" height="48" rx="5"/>
+  <text x="403" y="69">Shared PVC</text><text class="detail" x="403" y="86">Active model and history</text>
+  <rect class="node" x="501" y="49" width="135" height="48" rx="5"/>
+  <text x="568" y="69">Flask on Kubernetes</text><text class="detail" x="568" y="86">Gunicorn and HPA</text>
+  <rect class="node" x="501" y="6" width="135" height="33" rx="5"/>
+  <text x="568" y="27">NGINX ingress</text>
+  <rect class="node" x="141" y="132" width="161" height="48" rx="5"/>
+  <text x="221" y="152">Kubeflow Pipelines</text><text class="detail" x="221" y="169">Independent training run</text>
+  <rect class="node" x="338" y="132" width="130" height="48" rx="5"/>
+  <text x="403" y="152">KFP artifact store</text><text class="detail" x="403" y="169">Datasets and model</text>
+  <rect class="node" x="501" y="132" width="135" height="48" rx="5"/>
+  <text x="568" y="152">Docker Hub</text><text class="detail" x="568" y="169">GitHub Actions images</text>
+</svg>
+<p>Airflow publishes approved models through the authenticated API bridge. Kubeflow runs the same ETL and training code and records a separate artifact lineage.</p>
+
+<h2>Forecast and validation</h2>
+<p>The ridge autoregression uses lagged log returns, moving-average ratios, and seven-day volatility. The model predicts one daily close at a time and feeds that prediction into the next step. The latest seven closes form the chronological holdout. The baseline repeats the last pre-holdout close.</p>
+<p>A candidate passes when MAPE is at most 25% and RMSE is at most the larger of 1.5 times baseline RMSE and 0.5% of the last pre-holdout close. The approved model is then refit on all available observations.</p>
+<div class="edit" contenteditable="true">[First and last dates used, OHLCV row count, seven holdout dates, and forecast origin]</div>
+<footer><span>BTC-USD forecasting pipeline</span><span>1 / 5</span></footer>
+</section>
+
+<section class="page">
+<p class="kicker">PARTS A AND B</p>
+<h1>API Containers and CI</h1>
+<p>Flask serves forecasts through Gunicorn. A small runtime image runs as a non-root user. The GitHub workflow checks formatting, lint, and tests before building images and publishing commit-SHA and latest tags on main.</p>
+<div class="grid">
+  <div><h2>Forecast and validation</h2><div class="edit evidence" contenteditable="true">[Paste the seven dated predictions and a 400 response. Use readable crops or compact JSON.]</div></div>
+  <div><h2>Health and metrics</h2><div class="edit evidence" contenteditable="true">[Paste health status, the loaded model version and metrics from your API.]</div></div>
+</div>
+<h2>Local tests and Docker build</h2>
+<div class="edit evidence" contenteditable="true">[Paste the test summary and the Docker build output. Include the resulting image tag.]</div>
+<h2>GitHub Actions and registry</h2>
+<div class="edit evidence" contenteditable="true">[Paste the Actions run with successful jobs and identify the matching registry image tags.]</div>
+<div class="edit" contenteditable="true">[State the commit SHA and describe what the tests verified.]</div>
+<footer><span>BTC-USD forecasting pipeline</span><span>2 / 5</span></footer>
+</section>
+
+<section class="page">
+<p class="kicker">PART C</p>
+<h1>Training Orchestration</h1>
+<p>Airflow fetches completed candles daily at 01:00 UTC, builds features, evaluates and registers a model, then triggers API reload. Kubeflow connects the same scripts with typed dataset and model artifacts.</p>
+<h2>Airflow manual run</h2>
+<div class="edit evidence" contenteditable="true">[Paste the successful four-task graph. Include the manual run ID or timestamp.]</div>
+<h2>Evaluation and reload logs</h2>
+<div class="edit evidence" contenteditable="true">[Paste MAE, RMSE, MAPE, baseline RMSE, gate outcome, and the version confirmed by reload.]</div>
+<h2>Kubeflow execution and artifact</h2>
+<div class="edit evidence" contenteditable="true">[Paste the three-step graph or compiler output and the model artifact. Record the trainer image tag and recurring interval used.]</div>
+<footer><span>BTC-USD forecasting pipeline</span><span>3 / 5</span></footer>
+</section>
+
+<section class="page">
+<p class="kicker">PART D</p>
+<h1>Kubernetes Deployment and Scaling</h1>
+<p>The Deployment starts with three replicas. Both probes use <code>/health</code>. Containers request 100m CPU and 128Mi memory, with limits of 500m CPU and 512Mi memory. The CPU HPA targets 60% utilization and allows two to eight replicas.</p>
+<h2>Cluster evidence</h2>
+<div class="edit evidence" contenteditable="true">[Paste kubectl output for pods, services, HPA, ingress and PVC. Include the initial three replicas and btc-forecast.local routing.]</div>
+<h2>CPU and replica timeline</h2>
+<div class="edit evidence" contenteditable="true">[Paste the HPA chart from evidence/hpa-scaling.png and add the time window.]</div>
+<table>
+<thead><tr><th>Users and duration</th><th>Start / peak / end pods</th><th>Peak CPU</th><th>RPS / p95 / failures</th></tr></thead>
+<tbody><tr><td contenteditable="true">[Measured]</td><td contenteditable="true">[Measured]</td><td contenteditable="true">[Measured]</td><td contenteditable="true">[Measured]</td></tr></tbody>
+</table>
+<div class="edit" contenteditable="true">[Describe when the HPA changed its desired replica count and how latency or failures changed under load.]</div>
+<footer><span>BTC-USD forecasting pipeline</span><span>4 / 5</span></footer>
+</section>
+
+<section class="page">
+<p class="kicker">PART E</p>
+<h1>Resilience and End to End Results</h1>
+<h2>Pod deletion and replacement</h2>
+<div class="edit evidence" contenteditable="true">[Paste command output showing the deleted pod and its replacement. Record the observed time until Ready.]</div>
+<h2>Model promotion into Kubernetes</h2>
+<table>
+<thead><tr><th>Old version</th><th>New version</th><th>Most recent training date</th></tr></thead>
+<tbody><tr><td contenteditable="true">[Actual]</td><td contenteditable="true">[Actual]</td><td contenteditable="true">[Actual]</td></tr></tbody>
+</table>
+<div class="edit evidence" contenteditable="true">[Paste the live ingress forecast or compact response and confirm the version stayed available after pod replacement.]</div>
+<h2>Performance analysis and limitations</h2>
+<div class="edit" contenteditable="true">[Compare holdout RMSE to the baseline and summarize the observed autoscaling and recovery. Discuss the short evaluation window, reliance on market-data access, and single-node storage.]</div>
+<p class="ref">References · Apache Airflow, Kubeflow Pipelines, Kubernetes, and Docker documentation. See the repository README for links.</p>
+<footer><span>BTC-USD forecasting pipeline</span><span>5 / 5</span></footer>
+</section>
+</main>
+<script>
+const fields = document.querySelectorAll('[contenteditable="true"]');
+fields.forEach((field, index) => {
+  const key = "btc-report-field-v1-" + index;
+  try {
+    const saved = localStorage.getItem(key);
+    if (saved !== null) field.innerHTML = saved;
+  } catch {}
+  field.addEventListener("input", () => {
+    try { localStorage.setItem(key, field.innerHTML); } catch {}
+  });
+});
+</script>
+</body>
+</html>

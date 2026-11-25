@@ -1,0 +1,38 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: btc-model-seed
+  namespace: btc-forecast
+spec:
+  backoffLimit: 2
+  template:
+    spec:
+      automountServiceAccountToken: false
+      restartPolicy: Never
+      initContainers:
+        - name: set-volume-permissions
+          image: busybox:1.37
+          command: ["sh", "-ec", "chmod 0770 /app/models; chown 10001:10001 /app/models"]
+          securityContext:
+            runAsUser: 0
+            allowPrivilegeEscalation: false
+          volumeMounts:
+            - {name: models, mountPath: /app/models}
+      containers:
+        - name: trainer
+          image: btc-trainer:dev
+          imagePullPolicy: IfNotPresent
+          command: ["python", "-m", "src.seed"]
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities: {drop: [ALL]}
+          resources:
+            requests: {cpu: 100m, memory: 256Mi}
+            limits: {cpu: "1", memory: 1Gi}
+          volumeMounts:
+            - {name: models, mountPath: /app/models}
+      volumes:
+        - name: models
+          persistentVolumeClaim:
+            claimName: btc-models

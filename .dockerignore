@@ -1,0 +1,9 @@
+.env
+.git
+.venv
+.kfp-venv
+.load-venv
+**/__pycache__
+.pytest_cache
+evidence
+report
