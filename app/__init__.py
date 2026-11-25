@@ -1,1 +1,1 @@
-
+"""Flask application package."""

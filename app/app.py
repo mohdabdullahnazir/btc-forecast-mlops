@@ -1,7 +1,6 @@
 """Gunicorn entry point for the BTC-USD inference service."""
 
 import csv
-import logging
 import os
 from datetime import timedelta
 from hmac import compare_digest
