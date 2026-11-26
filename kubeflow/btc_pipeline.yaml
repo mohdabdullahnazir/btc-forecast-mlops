@@ -1,74 +1,118 @@
-# Reference IR for the local trainer image. Recompile with the KFP SDK for submission.
+# PIPELINE DEFINITION
+# Name: btc-7day-forecast
+# Description: Fetch, preprocess and evaluate a seven-day BTC-USD forecast.
 components:
-  comp-fetch-btc:
-    executorLabel: exec-fetch-btc
-    outputDefinitions:
-      artifacts:
-        raw:
-          artifactType: {schemaTitle: system.Dataset, schemaVersion: "0.0.1"}
   comp-engineer-features:
     executorLabel: exec-engineer-features
     inputDefinitions:
       artifacts:
         raw:
-          artifactType: {schemaTitle: system.Dataset, schemaVersion: "0.0.1"}
+          artifactType:
+            schemaTitle: system.Dataset
+            schemaVersion: 0.0.1
     outputDefinitions:
       artifacts:
         prepared:
-          artifactType: {schemaTitle: system.Dataset, schemaVersion: "0.0.1"}
+          artifactType:
+            schemaTitle: system.Dataset
+            schemaVersion: 0.0.1
+  comp-fetch-btc:
+    executorLabel: exec-fetch-btc
+    outputDefinitions:
+      artifacts:
+        raw:
+          artifactType:
+            schemaTitle: system.Dataset
+            schemaVersion: 0.0.1
   comp-train-7day:
     executorLabel: exec-train-7day
     inputDefinitions:
       artifacts:
         prepared:
-          artifactType: {schemaTitle: system.Dataset, schemaVersion: "0.0.1"}
+          artifactType:
+            schemaTitle: system.Dataset
+            schemaVersion: 0.0.1
     outputDefinitions:
       artifacts:
         model:
-          artifactType: {schemaTitle: system.Model, schemaVersion: "0.0.1"}
+          artifactType:
+            schemaTitle: system.Model
+            schemaVersion: 0.0.1
 deploymentSpec:
   executors:
-    exec-fetch-btc:
-      container:
-        image: btc-trainer:dev
-        command: [python, -m, src.etl_fetch]
-        args: ["--output", "{{$.outputs.artifacts['raw'].path}}"]
     exec-engineer-features:
       container:
-        image: btc-trainer:dev
-        command: [python, -m, src.preprocess]
-        args: ["--input", "{{$.inputs.artifacts['raw'].path}}", "--output", "{{$.outputs.artifacts['prepared'].path}}"]
+        args:
+        - --input
+        - '{{$.inputs.artifacts[''raw''].path}}'
+        - --output
+        - '{{$.outputs.artifacts[''prepared''].path}}'
+        command:
+        - python
+        - -m
+        - src.preprocess
+        image: ghcr.io/mohdabdullahnazir/btc-trainer:66b1ca051689350f2f09f9eb09bed266437c368a
+    exec-fetch-btc:
+      container:
+        args:
+        - --output
+        - '{{$.outputs.artifacts[''raw''].path}}'
+        command:
+        - python
+        - -m
+        - src.etl_fetch
+        image: ghcr.io/mohdabdullahnazir/btc-trainer:66b1ca051689350f2f09f9eb09bed266437c368a
     exec-train-7day:
       container:
-        image: btc-trainer:dev
-        command: [python, -m, src.train_forecast]
-        args: ["--input", "{{$.inputs.artifacts['prepared'].path}}", "--output", "{{$.outputs.artifacts['model'].path}}"]
+        args:
+        - --input
+        - '{{$.inputs.artifacts[''prepared''].path}}'
+        - --output
+        - '{{$.outputs.artifacts[''model''].path}}'
+        command:
+        - python
+        - -m
+        - src.train_forecast
+        image: ghcr.io/mohdabdullahnazir/btc-trainer:66b1ca051689350f2f09f9eb09bed266437c368a
 pipelineInfo:
-  name: btc-7day-forecast
   description: Fetch, preprocess and evaluate a seven-day BTC-USD forecast.
+  name: btc-7day-forecast
 root:
   dag:
     tasks:
-      fetch-btc:
-        cachingOptions: {enableCache: false}
-        componentRef: {name: comp-fetch-btc}
-        taskInfo: {name: fetch-btc}
       engineer-features:
-        cachingOptions: {enableCache: false}
-        componentRef: {name: comp-engineer-features}
-        dependentTasks: [fetch-btc]
+        cachingOptions: {}
+        componentRef:
+          name: comp-engineer-features
+        dependentTasks:
+        - fetch-btc
         inputs:
           artifacts:
             raw:
-              taskOutputArtifact: {producerTask: fetch-btc, outputArtifactKey: raw}
-        taskInfo: {name: engineer-features}
+              taskOutputArtifact:
+                outputArtifactKey: raw
+                producerTask: fetch-btc
+        taskInfo:
+          name: engineer-features
+      fetch-btc:
+        cachingOptions: {}
+        componentRef:
+          name: comp-fetch-btc
+        taskInfo:
+          name: fetch-btc
       train-7day:
-        cachingOptions: {enableCache: false}
-        componentRef: {name: comp-train-7day}
-        dependentTasks: [engineer-features]
+        cachingOptions: {}
+        componentRef:
+          name: comp-train-7day
+        dependentTasks:
+        - engineer-features
         inputs:
           artifacts:
             prepared:
-              taskOutputArtifact: {producerTask: engineer-features, outputArtifactKey: prepared}
-        taskInfo: {name: train-7day}
-schemaVersion: "2.1.0"
+              taskOutputArtifact:
+                outputArtifactKey: prepared
+                producerTask: engineer-features
+        taskInfo:
+          name: train-7day
+schemaVersion: 2.1.0
+sdkVersion: kfp-2.15.2
